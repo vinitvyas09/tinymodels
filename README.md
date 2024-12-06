@@ -24,6 +24,12 @@ This project demonstrates training and evaluation of two extremely compact neura
 
 ## Usage
 
+### Requirements
+``` bash
+pip install -r requirements.txt
+```
+### Train and evaluate the models
+
 ```bash
 # Minimal model
 python3 tinymodel-emotion-classification-10kB.py
