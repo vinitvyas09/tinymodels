@@ -15,7 +15,7 @@ import random
 ###############################################################################
 #                           CONFIGURATION MACROS
 ###############################################################################
-NUM_EPOCHS = 10     # Adjust number of epochs as desired
+NUM_EPOCHS = 100     # Adjust number of epochs as desired
 ENABLE_LOGS = False  # Set to False to reduce logging
 
 def log(message):

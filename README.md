@@ -46,17 +46,19 @@ This project exemplifies how limiting model parameters can drastically reduce si
 % ./tinymodel-emotion-classification-10kB.py 
 
 ================ FINAL SUMMARY ================
-Initial Test Accuracy: 0.499
-Final Test Accuracy: 0.681
-Total Training Time: 1.29 seconds
+Initial Test Accuracy: 0.495
+Final Test Accuracy: 0.682
+Total Training Time: 13.09 seconds
 Model Size: 9199 bytes
 ===============================================
+
+
 % ./tinymodel-emotion-classification-250kB.py
 
 ================ FINAL SUMMARY ================
-Initial Test Accuracy: 0.502
-Final Test Accuracy: 0.755
-Total Training Time: 1.98 seconds
+Initial Test Accuracy: 0.508
+Final Test Accuracy: 0.756
+Total Training Time: 17.19 seconds
 Model Size: 258223 bytes
 ===============================================
 ```
