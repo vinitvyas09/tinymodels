@@ -9,6 +9,7 @@ This project demonstrates training and evaluation of two extremely compact neura
 
 1. **Data Acquisition:**  
    The scripts automatically download and parse a Twitter sentiment dataset. Each tweet is labeled as `0` (negative) or `1` (positive).
+   Dataset URL: [Twitter Sentiment Dataset](https://huggingface.co/datasets/cblancac/twitter-sentiment-analysis)
 
 2. **Preprocessing:**  
    Text is tokenized, truncated or padded to a fixed length, and converted into integer sequences using a limited vocabulary.
