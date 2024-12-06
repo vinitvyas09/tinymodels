@@ -15,16 +15,28 @@ import random
 ###############################################################################
 #                           CONFIGURATION MACROS
 ###############################################################################
-NUM_EPOCHS = 2     # Fewer epochs, just a demonstration
-ENABLE_LOGS = True  # Set to False to reduce logging
+NUM_EPOCHS = 10     # Adjust number of epochs as desired
+ENABLE_LOGS = False  # Set to False to reduce logging
 
 def log(message):
+    """Logs a message only if ENABLE_LOGS is True."""
     if ENABLE_LOGS:
         print(message)
 
 ###############################################################################
+#                           HYPERPARAMETERS
+###############################################################################
+VOCAB_SIZE = 150      # Limit vocab size
+MAX_LENGTH = 20       # Sequence length for padding/truncation
+EMBED_DIM = 12        # Embedding dimension
+LEARNING_RATE = 0.001 # Learning rate for optimizer
+BATCH_SIZE = 512      # Batch size for training
+
+###############################################################################
 #                           DOWNLOAD DATASET
 ###############################################################################
+# Two files: train_150k.txt and test_62k.txt
+# Format: feeling \t text
 TRAIN_URL = "https://raw.githubusercontent.com/cblancac/SentimentAnalysisBert/main/data/train_150k.txt"
 TEST_URL = "https://raw.githubusercontent.com/cblancac/SentimentAnalysisBert/main/data/test_62k.txt"
 
@@ -44,6 +56,7 @@ log("[INFO] Loading training data...")
 with open("train_150k.txt", "r", encoding="utf-8") as f:
     train_lines = f.read().strip().split("\n")
 
+# Each line: "label<TAB>text"
 train_data = []
 for line in train_lines:
     parts = line.split("\t", 1)
@@ -53,9 +66,12 @@ for line in train_lines:
         text = text.strip()
         train_data.append((text, label))
 
+# Shuffle data
 random.seed(42)
 random.shuffle(train_data)
 
+# Split into train and validation
+# About 150k lines total, take 120k for train and 30k for validation
 train_size = 120000
 val_size = 30000
 train_subset = train_data[:train_size]
@@ -81,25 +97,23 @@ log(f"[INFO] Test set size: {len(test_data)}")
 ###############################################################################
 #                           BUILD VOCABULARY
 ###############################################################################
-# Extremely small vocabulary to keep model size tiny
-log("[INFO] Building tiny vocabulary...")
+# We'll build a small vocabulary from the training set.
+log("[INFO] Building vocabulary...")
 all_words = []
 for text, _ in train_subset:
     all_words.extend(text.lower().split())
 
-vocab_size = 500  # Very small vocabulary
 counter = Counter(all_words)
-vocab = [w for w, _ in counter.most_common(vocab_size)]
+vocab = [w for w, _ in counter.most_common(VOCAB_SIZE)]
 word_to_id = {w: i+1 for i, w in enumerate(vocab)}  # 0 for padding
 
-max_length = 10   # shorter max length to keep everything simple
-log(f"\t[INFO] Using vocab_size={vocab_size}, max_length={max_length}")
+log(f"\t[INFO] Using vocab_size={VOCAB_SIZE}, max_length={MAX_LENGTH}")
 
 def text_to_ids(text):
     tokens = text.lower().split()
-    ids = [word_to_id.get(t, 0) for t in tokens[:max_length]]
-    if len(ids) < max_length:
-        ids += [0]*(max_length - len(ids))
+    ids = [word_to_id.get(t, 0) for t in tokens[:MAX_LENGTH]]
+    if len(ids) < MAX_LENGTH:
+        ids += [0]*(MAX_LENGTH - len(ids))
     return ids
 
 def encode_dataset(data):
@@ -119,10 +133,9 @@ log(f"\t[INFO] X_test shape: {X_test.shape}, Y_test shape: {Y_test.shape}")
 ###############################################################################
 #                           DEFINE MODEL
 ###############################################################################
-# Very small embedding dimension
-log("[INFO] Defining a tiny model...")
+log("[INFO] Defining a tiny PyTorch model for Sentiment Analysis...")
 class TinySentimentModel(nn.Module):
-    def __init__(self, vocab_size, embed_dim=4, max_length=10):
+    def __init__(self, vocab_size, embed_dim=EMBED_DIM, max_length=MAX_LENGTH):
         super(TinySentimentModel, self).__init__()
         self.embedding = nn.Embedding(vocab_size+1, embed_dim, padding_idx=0)
         self.linear = nn.Linear(embed_dim, 1)
@@ -136,11 +149,11 @@ class TinySentimentModel(nn.Module):
         return probs
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = TinySentimentModel(vocab_size=vocab_size).to(device)
+model = TinySentimentModel(vocab_size=VOCAB_SIZE).to(device)
 
 criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.01)
-batch_size = 1024
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+batch_size = BATCH_SIZE
 
 X_train_t = torch.tensor(X_train, device=device)
 Y_train_t = torch.tensor(Y_train, device=device, dtype=torch.float32)
@@ -216,6 +229,7 @@ end_train_time = time.time()
 
 pr.disable()
 
+# Print profiling results if logs are enabled
 if ENABLE_LOGS:
     log("[INFO] Profiling Results:")
     s = io.StringIO()

@@ -40,3 +40,23 @@ python3 tinymodel-emotion-classification-250kB.py
 Adjust model parameters (e.g., NUM_EPOCHS, ENABLE_LOGS) at the top of each script. The final output includes initial accuracy, final accuracy, total training time, and model file size.
 
 This project exemplifies how limiting model parameters can drastically reduce size, enabling deployment on devices with strict memory constraints, while still performing basic emotion classification.
+
+## Example output
+``` bash
+% ./tinymodel-emotion-classification-10kB.py 
+
+================ FINAL SUMMARY ================
+Initial Test Accuracy: 0.499
+Final Test Accuracy: 0.681
+Total Training Time: 1.29 seconds
+Model Size: 9199 bytes
+===============================================
+% ./tinymodel-emotion-classification-250kB.py
+
+================ FINAL SUMMARY ================
+Initial Test Accuracy: 0.502
+Final Test Accuracy: 0.755
+Total Training Time: 1.98 seconds
+Model Size: 258223 bytes
+===============================================
+```

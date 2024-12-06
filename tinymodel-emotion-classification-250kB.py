@@ -15,13 +15,22 @@ import random
 ###############################################################################
 #                           CONFIGURATION MACROS
 ###############################################################################
-NUM_EPOCHS = 5     # Adjust number of epochs as desired
-ENABLE_LOGS = True  # Set to False to reduce logging
+NUM_EPOCHS = 10     # Adjust number of epochs as desired
+ENABLE_LOGS = False  # Set to False to reduce logging
 
 def log(message):
     """Logs a message only if ENABLE_LOGS is True."""
     if ENABLE_LOGS:
         print(message)
+
+###############################################################################
+#                           HYPERPARAMETERS
+###############################################################################
+VOCAB_SIZE = 2000    # Limit vocab size
+MAX_LENGTH = 20       # Sequence length for padding/truncation
+EMBED_DIM = 32        # Embedding dimension
+LEARNING_RATE = 0.001 # Learning rate for optimizer
+BATCH_SIZE = 512      # Batch size for training
 
 ###############################################################################
 #                           DOWNLOAD DATASET
@@ -88,26 +97,23 @@ log(f"[INFO] Test set size: {len(test_data)}")
 ###############################################################################
 #                           BUILD VOCABULARY
 ###############################################################################
-# We'll build a small vocabulary from the training set to keep the model small.
+# We'll build a small vocabulary from the training set.
 log("[INFO] Building vocabulary...")
 all_words = []
 for text, _ in train_subset:
     all_words.extend(text.lower().split())
 
-# Limit vocab size for demonstration
-vocab_size = 2000
 counter = Counter(all_words)
-vocab = [w for w, _ in counter.most_common(vocab_size)]
+vocab = [w for w, _ in counter.most_common(VOCAB_SIZE)]
 word_to_id = {w: i+1 for i, w in enumerate(vocab)}  # 0 for padding
 
-max_length = 20
-log(f"\t[INFO] Using vocab_size={vocab_size}, max_length={max_length}")
+log(f"\t[INFO] Using vocab_size={VOCAB_SIZE}, max_length={MAX_LENGTH}")
 
 def text_to_ids(text):
     tokens = text.lower().split()
-    ids = [word_to_id.get(t, 0) for t in tokens[:max_length]]
-    if len(ids) < max_length:
-        ids += [0]*(max_length - len(ids))
+    ids = [word_to_id.get(t, 0) for t in tokens[:MAX_LENGTH]]
+    if len(ids) < MAX_LENGTH:
+        ids += [0]*(MAX_LENGTH - len(ids))
     return ids
 
 def encode_dataset(data):
@@ -129,7 +135,7 @@ log(f"\t[INFO] X_test shape: {X_test.shape}, Y_test shape: {Y_test.shape}")
 ###############################################################################
 log("[INFO] Defining a tiny PyTorch model for Sentiment Analysis...")
 class TinySentimentModel(nn.Module):
-    def __init__(self, vocab_size, embed_dim=32, max_length=20):
+    def __init__(self, vocab_size, embed_dim=EMBED_DIM, max_length=MAX_LENGTH):
         super(TinySentimentModel, self).__init__()
         self.embedding = nn.Embedding(vocab_size+1, embed_dim, padding_idx=0)
         self.linear = nn.Linear(embed_dim, 1)
@@ -143,11 +149,11 @@ class TinySentimentModel(nn.Module):
         return probs
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = TinySentimentModel(vocab_size=vocab_size).to(device)
+model = TinySentimentModel(vocab_size=VOCAB_SIZE).to(device)
 
 criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-batch_size = 512  # Larger batch size for a heavier load
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+batch_size = BATCH_SIZE
 
 X_train_t = torch.tensor(X_train, device=device)
 Y_train_t = torch.tensor(Y_train, device=device, dtype=torch.float32)

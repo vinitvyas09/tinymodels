@@ -1,0 +1,7 @@
+# Ignore large dataset files
+train_150k.txt
+test_62k.txt
+
+# Ignore model checkpoint files
+*.pt
+
