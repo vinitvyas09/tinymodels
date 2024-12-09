@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import requests
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -33,27 +32,24 @@ LEARNING_RATE = 0.001 # Learning rate for optimizer
 BATCH_SIZE = 512      # Batch size for training
 
 ###############################################################################
-#                           DOWNLOAD DATASET
+#                           LOAD DATASET FROM FOLDER
 ###############################################################################
 # Two files: train_150k.txt and test_62k.txt
-# Format: feeling \t text
-TRAIN_URL = "https://raw.githubusercontent.com/cblancac/SentimentAnalysisBert/main/data/train_150k.txt"
-TEST_URL = "https://raw.githubusercontent.com/cblancac/SentimentAnalysisBert/main/data/test_62k.txt"
+# Located in ./data/
+TRAIN_FILE = "./data/train_150k.txt"
+TEST_FILE = "./data/test_62k.txt"
 
-log("[INFO] Downloading the Twitter Sentiment dataset...")
-if not os.path.exists("train_150k.txt"):
-    with open("train_150k.txt", "wb") as f:
-        f.write(requests.get(TRAIN_URL).content)
-
-if not os.path.exists("test_62k.txt"):
-    with open("test_62k.txt", "wb") as f:
-        f.write(requests.get(TEST_URL).content)
+log("[INFO] Checking for dataset files in './data/'...")
+if not os.path.exists(TRAIN_FILE) or not os.path.exists(TEST_FILE):
+    raise FileNotFoundError(
+        "[ERROR] Dataset files not found in './data/'. Please ensure that train_150k.txt and test_62k.txt are present in the './data/' directory."
+)
 
 ###############################################################################
 #                           LOAD & PREPROCESS DATA
 ###############################################################################
 log("[INFO] Loading training data...")
-with open("train_150k.txt", "r", encoding="utf-8") as f:
+with open(TRAIN_FILE, "r", encoding="utf-8") as f:
     train_lines = f.read().strip().split("\n")
 
 # Each line: "label<TAB>text"
@@ -80,7 +76,7 @@ val_subset = train_data[train_size:train_size+val_size]
 log(f"[INFO] Training set size: {len(train_subset)}, Validation set size: {len(val_subset)}")
 
 log("[INFO] Loading test data...")
-with open("test_62k.txt", "r", encoding="utf-8") as f:
+with open(TEST_FILE, "r", encoding="utf-8") as f:
     test_lines = f.read().strip().split("\n")
 
 test_data = []
